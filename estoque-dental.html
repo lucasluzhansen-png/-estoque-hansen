@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estoque Hansen Odontologia</title>
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#242736;--border:#2e3347;--text:#e8eaf0;--muted:#6b7280;--accent:#4f9cf9;--danger:#f05252;--warning:#f59e0b;--ok:#10b981;--r:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.logo{font-weight:700;font-size:17px}.logo span{color:var(--accent)}
+.stats{display:flex;gap:20px}
+.stat-n{font-size:22px;font-weight:700;line-height:1}.stat-n.danger{color:var(--danger)}.stat-n.ok{color:var(--ok)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:2px}
+.tabs{display:flex;gap:2px;padding:14px 24px 0;border-bottom:1px solid var(--border);background:var(--surface);overflow-x:auto}
+.tab{padding:8px 16px;border-radius:var(--r) var(--r) 0 0;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border:1px solid transparent;border-bottom:none;white-space:nowrap;transition:all .15s}
+.tab.active{background:var(--bg);color:var(--text);border-color:var(--border)}
+.tab:hover:not(.active){color:var(--text)}
+.panel{display:none;padding:20px 24px}.panel.active{display:block}
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+input[type=text],input[type=number],select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--r);font-size:13px;outline:none}
+input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--accent)}
+input[type=text]{flex:1;min-width:160px}
+.table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);max-height:calc(100vh - 270px);overflow-y:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:9px 10px;text-align:left;position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--surface2)}
+td{padding:8px 10px;vertical-align:middle}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.danger{background:rgba(240,82,82,.15);color:var(--danger)}
+.badge.warning{background:rgba(245,158,11,.15);color:var(--warning)}
+.badge.ok{background:rgba(16,185,129,.12);color:var(--ok)}
+.badge.over{background:rgba(79,156,249,.12);color:var(--accent)}
+.qty-ctrl{display:flex;align-items:center;gap:5px}
+.qty-btn{width:26px;height:26px;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .1s}
+.qty-btn:hover{background:var(--border)}
+.qty-val{width:36px;text-align:center;font-weight:600;font-size:15px}
+.editable-cell{cursor:pointer;padding:3px 6px;border-radius:4px;transition:background .15s}
+.editable-cell:hover{background:var(--surface2)}
+.edit-input{width:52px;padding:3px 6px;font-size:13px;border-radius:4px;text-align:center}
+.prod-name{font-weight:500}.prod-fab{font-size:11px;color:var(--muted)}
+.cat-chip{font-size:11px;color:var(--muted);background:var(--surface2);padding:2px 7px;border-radius:10px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.88}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{background:var(--border)}
+.btn-danger{background:rgba(240,82,82,.12);color:var(--danger);border:1px solid rgba(240,82,82,.2)}.btn-danger:hover{background:rgba(240,82,82,.22)}
+.btn-ok{background:rgba(16,185,129,.12);color:var(--ok);border:1px solid rgba(16,185,129,.2)}.btn-ok:hover{background:rgba(16,185,129,.22)}
+.btn-accent{background:rgba(79,156,249,.12);color:var(--accent);border:1px solid rgba(79,156,249,.2)}.btn-accent:hover{background:rgba(79,156,249,.22)}
+.btn-sm{padding:4px 9px;font-size:12px}
+.btn-xs{padding:3px 7px;font-size:11px}
+.compra-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.compra-item.critico{border-left:3px solid var(--danger)}
+.compra-info h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.compra-meta{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.compra-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+.modal h3{margin-bottom:16px;font-size:16px}
+.form-group{margin-bottom:12px}.form-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.form-group input,.form-group select{width:100%}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.hist-item{background:var(--surface2);border-radius:6px;padding:10px 12px;margin-bottom:6px;font-size:13px}
+.hist-item .hi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.hist-item .hi-meta{font-size:11px;color:var(--muted)}
+.cotacao-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px}
+.cotacao-item h4{font-size:13px;font-weight:600;margin-bottom:8px}
+.cotacao-result{font-size:13px;color:var(--muted);min-height:28px}
+.cotacao-result.loading{color:var(--accent)}
+.cotacao-result.found{color:var(--ok)}
+.cotacao-result.notfound{color:var(--muted)}
+.cotacao-preco{font-size:18px;font-weight:700;color:var(--ok)}
+.lixeira-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;opacity:.7}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);padding:11px 16px;border-radius:var(--r);font-size:13px;z-index:200;opacity:0;transform:translateY(10px);transition:all .2s}
+.toast.show{opacity:1;transform:translateY(0)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.section-header h2{font-size:15px;font-weight:600}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.ai-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;background:rgba(79,156,249,.1);color:var(--accent);border:1px solid rgba(79,156,249,.2)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Hansen <span>Estoque</span></div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="s-total">0</div><div class="stat-label">Produtos</div></div>
+    <div class="stat"><div class="stat-n danger" id="s-falta">0</div><div class="stat-label">Em falta</div></div>
+    <div class="stat"><div class="stat-n ok" id="s-ok">0</div><div class="stat-label">OK</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--muted)" id="s-lixeira">0</div><div class="stat-label">Lixeira</div></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('estoque')">📦 Estoque</div>
+  <div class="tab" onclick="showTab('compras')">🛒 Compras</div>
+  <div class="tab" onclick="showTab('cotacao')">💰 Cotação IA</div>
+  <div class="tab" onclick="showTab('historico')">📋 Histórico</div>
+  <div class="tab" onclick="showTab('lixeira')">🗑 Lixeira</div>
+  <div class="tab" onclick="showTab('add')">➕ Novo</div>
+</div>
+
+<!-- ESTOQUE -->
+<div id="panel-estoque" class="panel active">
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Buscar produto..." oninput="renderEstoque()">
+    <select id="filtro-cat" onchange="renderEstoque()">
+      <option value="">Todas as categorias</option>
+      <option>Imobilizado</option>
+      <option>Componentes Protéticos</option>
+      <option>Material Cirúrgico</option>
+    </select>
+    <select id="filtro-status" onchange="renderEstoque()">
+      <option value="">Todos os status</option>
+      <option value="danger">Abaixo do mínimo</option>
+      <option value="warning">No mínimo</option>
+      <option value="ok">OK</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="exportarCSV()">⬇ Excel</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Produto</th><th>Cat.</th><th>Status</th><th>Qtd</th>
+        <th title="Clique para editar">Mín ✏</th>
+        <th title="Clique para editar">Ideal ✏</th>
+        <th>Custo</th><th></th>
+      </tr></thead>
+      <tbody id="tbody-estoque"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- COMPRAS -->
+<div id="panel-compras" class="panel">
+  <div class="section-header">
+    <h2>Itens para repor</h2>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="copiarLista()">📋 Copiar lista</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportarCSVCompras()">⬇ Excel compras</button>
+    </div>
+  </div>
+  <div id="compras-list"></div>
+</div>
+
+<!-- COTAÇÃO IA -->
+<div id="panel-cotacao" class="panel">
+  <div class="section-header">
+    <h2>Cotação automática <span class="ai-chip">✨ IA + Web</span></h2>
+    <button class="btn btn-primary" id="btn-cotar" onclick="iniciarCotacao()">🔍 Cotar lista de compras</button>
+  </div>
+  <div class="progress-bar" id="progress-bar" style="display:none"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div id="cotacao-status" style="font-size:13px;color:var(--muted);margin-bottom:12px"></div>
+  <div id="cotacao-list"></div>
+</div>
+
+<!-- HISTÓRICO -->
+<div id="panel-historico" class="panel">
+  <div class="section-header">
+    <h2>Histórico de entradas</h2>
+    <button class="btn btn-ghost btn-sm" onclick="exportarCSVHistorico()">⬇ Excel histórico</button>
+  </div>
+  <div id="historico-list"></div>
+</div>
+
+<!-- LIXEIRA -->
+<div id="panel-lixeira" class="panel">
+  <div class="section-header">
+    <h2>Lixeira</h2>
+    <button class="btn btn-danger btn-sm" onclick="esvaziarLixeira()">🗑 Esvaziar</button>
+  </div>
+  <div id="lixeira-list"></div>
+</div>
+
+<!-- NOVO PRODUTO -->
+<div id="panel-add" class="panel">
+  <div style="max-width:460px">
+    <h2 style="margin-bottom:18px;font-size:15px">Cadastrar produto</h2>
+    <div class="form-group"><label>Nome *</label><input type="text" id="new-nome" placeholder="Ex: Luva Nitrila M"></div>
+    <div class="form-group"><label>Categoria *</label>
+      <select id="new-cat"><option>Imobilizado</option><option>Componentes Protéticos</option><option>Material Cirúrgico</option></select>
+    </div>
+    <div class="grid2">
+      <div class="form-group"><label>Fabricante</label><input type="text" id="new-fab" placeholder="Ex: FGM"></div>
+      <div class="form-group"><label>Custo médio (R$)</label><input type="number" id="new-custo" value="0" min="0" step="0.01"></div>
+    </div>
+    <div class="grid3">
+      <div class="form-group"><label>Atual</label><input type="number" id="new-atual" value="0" min="0"></div>
+      <div class="form-group"><label>Mínimo</label><input type="number" id="new-min" value="1" min="0"></div>
+      <div class="form-group"><label>Ideal</label><input type="number" id="new-ideal" value="3" min="0"></div>
+    </div>
+    <button class="btn btn-primary" onclick="addProduto()">Salvar produto</button>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR COMPRA -->
+<div class="modal-bg" id="modal-compra">
+  <div class="modal">
+    <h3>📥 Registrar entrada</h3>
+    <div id="modal-compra-nome" style="color:var(--muted);font-size:13px;margin-bottom:14px"></div>
+    <div class="grid2">
+      <div class="form-group"><label>Quantidade recebida *</label><input type="number" id="mc-qtd" value="1" min="1"></div>
+      <div class="form-group"><label>Preço unit. pago (R$)</label><input type="number" id="mc-preco" value="0" min="0" step="0.01"></div>
+    </div>
+    <div class="form-group"><label>Fornecedor</label><input type="text" id="mc-forn" placeholder="Ex: Dental Cremer"></div>
+    <div class="form-group"><label>Data</label><input type="date" id="mc-data"></div>
+    <div class="form-group"><label>Observação</label><input type="text" id="mc-obs" placeholder="Opcional"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-compra')">Cancelar</button>
+      <button class="btn btn-primary" onclick="registrarCompra()">Confirmar entrada</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HISTÓRICO PRODUTO -->
+<div class="modal-bg" id="modal-hist">
+  <div class="modal" style="max-width:520px">
+    <h3 id="modal-hist-title">Histórico</h3>
+    <div id="modal-hist-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-hist')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'hansen_estoque_v2';
+let produtos = [], nextId = 300, produtoCompraAtual = null;
+
+const DEFAULT = [{"id":1,"codigo":"7898032320431","categoria":"Imobilizado","produto":"Acido Fluoridrico","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":25.99,"fabricante":""},{"id":2,"codigo":"65898869141","categoria":"Imobilizado","produto":"Acido Fosforico","un":"UN","estoqueMinimo":3,"estoqueIdeal":18,"estoqueAtual":9,"custoMedio":3.9,"fabricante":""},{"id":3,"codigo":"7898001895687","categoria":"Imobilizado","produto":"Acrilico Auto Polimerizante","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":28.3,"fabricante":""},{"id":4,"codigo":"7898032322794","categoria":"Imobilizado","produto":"Adesivo Ambar","un":"UN","estoqueMinimo":3,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":64.47,"fabricante":"fgm"},{"id":5,"codigo":"700025","categoria":"Imobilizado","produto":"Adesivo Moldeira Silicone","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":65.0,"fabricante":""},{"id":6,"codigo":"","categoria":"Imobilizado","produto":"Agulha Gengival","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":1,"custoMedio":105.9,"fabricante":"terumo"},{"id":7,"codigo":"7898498111895","categoria":"Imobilizado","produto":"Alavanca Esquerda","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":29.48,"fabricante":""},{"id":8,"codigo":"7899065800426","categoria":"Imobilizado","produto":"Alavanca Reta","un":"UN","estoqueMinimo":1,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":36.33,"fabricante":""},{"id":9,"codigo":"7897808300073","categoria":"Imobilizado","produto":"Alginato","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":16.51,"fabricante":"coltene"},{"id":10,"codigo":"7891800002034","categoria":"Imobilizado","produto":"Algodao","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":15.9,"fabricante":""},{"id":11,"codigo":"7898109744238","categoria":"Imobilizado","produto":"Almotolia 250","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":6.3,"fabricante":""},{"id":12,"codigo":"7898109744245","categoria":"Imobilizado","produto":"Almotolia 500ml","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":13.6,"fabricante":""},{"id":13,"codigo":"7894590502050","categoria":"Imobilizado","produto":"Anestesico Articaina","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":2,"custoMedio":159.9,"fabricante":"dfl"},{"id":14,"codigo":"7892525041049","categoria":"Imobilizado","produto":"Anestesico Lidocaina","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":4,"custoMedio":59.9,"fabricante":"swhite"},{"id":15,"codigo":"7894590503910","categoria":"Imobilizado","produto":"Anestesico Topico","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":7.7,"fabricante":"dfl"},{"id":16,"codigo":"7898561540614","categoria":"Imobilizado","produto":"Arco Young Plastico","un":"UN","estoqueMinimo":6,"estoqueIdeal":12,"estoqueAtual":6,"custoMedio":11.9,"fabricante":"maquira"},{"id":17,"codigo":"65898871731","categoria":"Imobilizado","produto":"Babador Desc","un":"UN","estoqueMinimo":1,"estoqueIdeal":9,"estoqueAtual":9,"custoMedio":10.9,"fabricante":"allprime"},{"id":18,"codigo":"7898901604013","categoria":"Imobilizado","produto":"Banda Matriz aco Inox","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":2.5,"fabricante":""},{"id":19,"codigo":"7898561540188","categoria":"Imobilizado","produto":"Bicarbonato","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":0.0,"fabricante":""},{"id":20,"codigo":"7898629260560","categoria":"Imobilizado","produto":"Broca Carbide fg 702","un":"UN","estoqueMinimo":1,"estoqueIdeal":5,"estoqueAtual":5,"custoMedio":14.2,"fabricante":""},{"id":21,"codigo":"6908170","categoria":"Imobilizado","produto":"Broca Carbide fg3","un":"UN","estoqueMinimo":1,"estoqueIdeal":8,"estoqueAtual":8,"custoMedio":9.8,"fabricante":""},{"id":22,"codigo":"6631658","categoria":"Imobilizado","produto":"Broca Carbide fg5","un":"UN","estoqueMinimo":1,"estoqueIdeal":8,"estoqueAtual":8,"custoMedio":9.8,"fabricante":""},{"id":23,"codigo":"7898229841688","categoria":"Imobilizado","produto":"Broca Endo","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":0.0,"fabricante":""},{"id":24,"codigo":"7898561541345","categoria":"Imobilizado","produto":"Broqueiro em Aluminio","un":"UN","estoqueMinimo":1,"estoqueIdeal":8,"estoqueAtual":8,"custoMedio":19.9,"fabricante":""},{"id":25,"codigo":"7899065801324","categoria":"Imobilizado","produto":"Cabo Para Bisturi","un":"UN","estoqueMinimo":1,"estoqueIdeal":7,"estoqueAtual":7,"custoMedio":11.6,"fabricante":""},{"id":26,"codigo":"7908004405933","categoria":"Imobilizado","produto":"Cabo Para Espelho","un":"UN","estoqueMinimo":1,"estoqueIdeal":20,"estoqueAtual":20,"custoMedio":4.98,"fabricante":""},{"id":27,"codigo":"7898916637068","categoria":"Imobilizado","produto":"Caixa de Aparelho","un":"UN","estoqueMinimo":0,"estoqueIdeal":0,"estoqueAtual":0,"custoMedio":10.0,"fabricante":""},{"id":28,"codigo":"7899065807081","categoria":"Imobilizado","produto":"Calcador fio","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":10.34,"fabricante":""},{"id":29,"codigo":"7908004406459","categoria":"Imobilizado","produto":"Calcaldor Dycal","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":15.98,"fabricante":""},{"id":30,"codigo":"751320502124","categoria":"Imobilizado","produto":"Cami","un":"UN","estoqueMinimo":5,"estoqueIdeal":50,"estoqueAtual":50,"custoMedio":29.08,"fabricante":""},{"id":31,"codigo":"7898078655535","categoria":"Imobilizado","produto":"Carbono Contacto","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":15.34,"fabricante":"angelus"},{"id":32,"codigo":"7898475427629","categoria":"Imobilizado","produto":"Carpule","un":"UN","estoqueMinimo":12,"estoqueIdeal":20,"estoqueAtual":12,"custoMedio":43.8,"fabricante":""},{"id":33,"codigo":"65898868930","categoria":"Imobilizado","produto":"Catalisador Silicone Condensacao","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":22.97,"fabricante":""},{"id":34,"codigo":"7898284974109","categoria":"Imobilizado","produto":"Cavitec Restaurador Temp","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":13.78,"fabricante":"caithec"},{"id":35,"codigo":"7898916689166","categoria":"Imobilizado","produto":"Cera Odontologica","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":5,"custoMedio":0.0,"fabricante":""},{"id":36,"codigo":"7894713000326","categoria":"Imobilizado","produto":"Cera Para Escultura","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":16.83,"fabricante":""},{"id":37,"codigo":"7898288140500","categoria":"Imobilizado","produto":"Cera Periferica","un":"UN","estoqueMinimo":1,"estoqueIdeal":40,"estoqueAtual":40,"custoMedio":16.4,"fabricante":""},{"id":38,"codigo":"7898288140302","categoria":"Imobilizado","produto":"Cera Rosa 7","un":"UN","estoqueMinimo":1,"estoqueIdeal":18,"estoqueAtual":18,"custoMedio":17.2,"fabricante":""},{"id":39,"codigo":"7029368","categoria":"Imobilizado","produto":"Cimento Prov","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":99.0,"fabricante":""},{"id":40,"codigo":"7899633801923","categoria":"Imobilizado","produto":"Cimento Resinoso Allcem Core","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":98.17,"fabricante":"fgm"},{"id":41,"codigo":"7892525031057","categoria":"Imobilizado","produto":"Cimento Zinco Liquido","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":18.7,"fabricante":""},{"id":42,"codigo":"7892525031101","categoria":"Imobilizado","produto":"Cimento Zinco po","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":18.7,"fabricante":""},{"id":43,"codigo":"7899633805235","categoria":"Imobilizado","produto":"Clareador Dental","un":"UN","estoqueMinimo":1,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":16.02,"fabricante":""},{"id":44,"codigo":"7899633805334","categoria":"Imobilizado","produto":"Clareador Dental 35%","un":"UN","estoqueMinimo":1,"estoqueIdeal":12,"estoqueAtual":12,"custoMedio":162.23,"fabricante":"whiteness hp"},{"id":45,"codigo":"7322018","categoria":"Imobilizado","produto":"Colgadura","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":12.73,"fabricante":""},{"id":46,"codigo":"7898061103920","categoria":"Imobilizado","produto":"Compasso de Willis","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":37.4,"fabricante":""},{"id":47,"codigo":"7898919113255","categoria":"Imobilizado","produto":"Contraste Para Foto","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":72.48,"fabricante":"indusbello"},{"id":48,"codigo":"7898561540621","categoria":"Imobilizado","produto":"Cuba Alginato","un":"UN","estoqueMinimo":8,"estoqueIdeal":16,"estoqueAtual":8,"custoMedio":4.74,"fabricante":""},{"id":49,"codigo":"7898234773035","categoria":"Imobilizado","produto":"Cuba Inox","un":"UN","estoqueMinimo":1,"estoqueIdeal":8,"estoqueAtual":8,"custoMedio":12.16,"fabricante":""},{"id":50,"codigo":"101131002019011624","categoria":"Imobilizado","produto":"Cunha","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":49.0,"fabricante":"kerr"},{"id":51,"codigo":"7897990349539","categoria":"Imobilizado","produto":"Cunhas Anat. Amarelas","un":"UN","estoqueMinimo":1,"estoqueIdeal":100,"estoqueAtual":100,"custoMedio":40.74,"fabricante":""},{"id":52,"codigo":"7898498111123","categoria":"Imobilizado","produto":"Cureta de Lucas","un":"UN","estoqueMinimo":1,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":9.24,"fabricante":""},{"id":53,"codigo":"65898870310","categoria":"Imobilizado","produto":"Cureta Gracey 11-12","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":40.15,"fabricante":""},{"id":54,"codigo":"65898870320","categoria":"Imobilizado","produto":"Cureta Gracey 13-14","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":40.15,"fabricante":""},{"id":55,"codigo":"65898870280","categoria":"Imobilizado","produto":"Cureta Gracey 5-6","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":40.15,"fabricante":""},{"id":56,"codigo":"65898870290","categoria":"Imobilizado","produto":"Cureta Gracey 7- 8","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":40.15,"fabricante":""},{"id":57,"codigo":"7898475426998","categoria":"Imobilizado","produto":"Cureta Morse","un":"UN","estoqueMinimo":6,"estoqueIdeal":9,"estoqueAtual":6,"custoMedio":30.99,"fabricante":"ice"},{"id":58,"codigo":"7898561541086","categoria":"Imobilizado","produto":"Dappen","un":"UN","estoqueMinimo":10,"estoqueIdeal":20,"estoqueAtual":10,"custoMedio":4.5,"fabricante":"maquira"},{"id":59,"codigo":"7908155801554","categoria":"Imobilizado","produto":"Disco de Carburundum","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":6.05,"fabricante":""},{"id":60,"codigo":"6589868750","categoria":"Imobilizado","produto":"Dispensador Pistola Silicone","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":299.0,"fabricante":""},{"id":61,"codigo":"6589868740","categoria":"Imobilizado","produto":"Dispensador Pistola Silicone 4:1","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":299.0,"fabricante":""},{"id":62,"codigo":"7908155802513","categoria":"Imobilizado","produto":"Dupla Face Periferico","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":32.5,"fabricante":""},{"id":63,"codigo":"","categoria":"Imobilizado","produto":"Enxerto Ósseo Sintético Nanosynt 200-500µm","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":0,"custoMedio":189.0,"fabricante":"FGM"},{"id":64,"codigo":"7899179733696","categoria":"Imobilizado","produto":"Escala Vita","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":853.0,"fabricante":"vita"},{"id":65,"codigo":"7891800111682","categoria":"Imobilizado","produto":"Escova de Robinson","un":"UN","estoqueMinimo":10,"estoqueIdeal":100,"estoqueAtual":50,"custoMedio":1.9,"fabricante":"mk"},{"id":66,"codigo":"7898284099505","categoria":"Imobilizado","produto":"Esculpidor Hollemback","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":9.24,"fabricante":""},{"id":67,"codigo":"7908004404042","categoria":"Imobilizado","produto":"Esculpidor Lecron","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":15.98,"fabricante":""},{"id":68,"codigo":"7898561540522","categoria":"Imobilizado","produto":"Espandex","un":"UN","estoqueMinimo":3,"estoqueIdeal":18,"estoqueAtual":9,"custoMedio":10.5,"fabricante":""},{"id":69,"codigo":"7898561540942","categoria":"Imobilizado","produto":"Espatula de Alginato","un":"UN","estoqueMinimo":3,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":2.76,"fabricante":""},{"id":70,"codigo":"7899065804233","categoria":"Imobilizado","produto":"Espatula Dupla n 50","un":"UN","estoqueMinimo":6,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":14.13,"fabricante":"golgran"},{"id":71,"codigo":"7898061104651","categoria":"Imobilizado","produto":"Espatula Inox","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":7.18,"fabricante":""},{"id":72,"codigo":"7908004410791","categoria":"Imobilizado","produto":"Especimetro","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":51.25,"fabricante":""},{"id":73,"codigo":"7899065830027","categoria":"Imobilizado","produto":"Especimetro Castrovejo","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":225.3,"fabricante":""},{"id":74,"codigo":"2028310327134","categoria":"Imobilizado","produto":"Espelho de mao","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":33.75,"fabricante":""},{"id":75,"codigo":"7898663790214","categoria":"Imobilizado","produto":"Filme pvc","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":13.86,"fabricante":""},{"id":76,"codigo":"14660355810","categoria":"Imobilizado","produto":"Filme Radiografico","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":140.0,"fabricante":"agfa"},{"id":77,"codigo":"5600860500167","categoria":"Imobilizado","produto":"Fio de Sutura 3-0 Nylon","un":"UN","estoqueMinimo":1,"estoqueIdeal":24,"estoqueAtual":12,"custoMedio":26.9,"fabricante":"bestcare"},{"id":78,"codigo":"5600860500174","categoria":"Imobilizado","produto":"Fio de Sutura 4-0 Nylon","un":"UN","estoqueMinimo":1,"estoqueIdeal":24,"estoqueAtual":12,"custoMedio":25.96,"fabricante":"bestcare"},{"id":79,"codigo":"7898585291141","categoria":"Imobilizado","produto":"Fio Dental","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":12.99,"fabricante":"powerdent"},{"id":80,"codigo":"7898938244213","categoria":"Imobilizado","produto":"Fluor","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":7.49,"fabricante":"maquira"},{"id":81,"codigo":"7899065804875","categoria":"Imobilizado","produto":"Forceps 150","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":80.0,"fabricante":""},{"id":82,"codigo":"7899065804899","categoria":"Imobilizado","produto":"Forceps 151","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":80.0,"fabricante":""},{"id":83,"codigo":"7899065804912","categoria":"Imobilizado","produto":"Forceps 16","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":80.0,"fabricante":""},{"id":84,"codigo":"7899065804936","categoria":"Imobilizado","produto":"Forceps 17","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":80.0,"fabricante":""},{"id":85,"codigo":"7899065804974","categoria":"Imobilizado","produto":"Forceps 18l","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":80.0,"fabricante":""},{"id":86,"codigo":"7899065804998","categoria":"Imobilizado","produto":"Forceps 18r","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":80.0,"fabricante":""},{"id":87,"codigo":"7899065805209","categoria":"Imobilizado","produto":"Forceps 69","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":80.0,"fabricante":""},{"id":88,"codigo":"7891800729535","categoria":"Imobilizado","produto":"Fotopolimerizador","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":599.0,"fabricante":""},{"id":89,"codigo":"9991000521446","categoria":"Imobilizado","produto":"Fresas de Tungstenio Maxcult Azul","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":0,"fabricante":""},{"id":90,"codigo":"1234567118","categoria":"Imobilizado","produto":"Fresas Microcult","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":14.2,"fabricante":""},{"id":91,"codigo":"7891899081019","categoria":"Imobilizado","produto":"Gaze","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":1,"custoMedio":18.49,"fabricante":""},{"id":92,"codigo":"9991000658319","categoria":"Imobilizado","produto":"Gesso Tipo II","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":5.0,"fabricante":"durastone"},{"id":93,"codigo":"7897808301292","categoria":"Imobilizado","produto":"Gesso Tipo III","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":3,"custoMedio":10.0,"fabricante":"coltene"},{"id":94,"codigo":"7893628086272","categoria":"Imobilizado","produto":"Gesso Tipo IV","un":"UN","estoqueMinimo":0,"estoqueIdeal":0,"estoqueAtual":0,"custoMedio":0,"fabricante":"coltene"},{"id":95,"codigo":"7898288140043","categoria":"Imobilizado","produto":"Godiva","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":14.7,"fabricante":""},{"id":96,"codigo":"7899065806190","categoria":"Imobilizado","produto":"Grampo Isolamento 04","un":"UN","estoqueMinimo":1,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":15.91,"fabricante":""},{"id":97,"codigo":"7899065806084","categoria":"Imobilizado","produto":"Grampo Isolamento 12","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":15.91,"fabricante":""},{"id":98,"codigo":"7899065806091","categoria":"Imobilizado","produto":"Grampo Isolamento 13","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":15.91,"fabricante":""},{"id":99,"codigo":"7899065806169","categoria":"Imobilizado","produto":"Grampo Isolamento 207","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":15.91,"fabricante":""},{"id":100,"codigo":"7899065806176","categoria":"Imobilizado","produto":"Grampo Isolamento 209","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":15.91,"fabricante":""},{"id":101,"codigo":"7899065806206","categoria":"Imobilizado","produto":"Grampo Isolamento 26","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":15.91,"fabricante":""},{"id":102,"codigo":"7899065806282","categoria":"Imobilizado","produto":"Grampo Para Isolamento 208","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":15.91,"fabricante":""},{"id":103,"codigo":"7898254945917","categoria":"Imobilizado","produto":"Hemostatico","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":20.6,"fabricante":"technew"},{"id":104,"codigo":"7897808301674","categoria":"Imobilizado","produto":"Hidroxido de Calcio","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":29.62,"fabricante":""},{"id":105,"codigo":"7898561540195","categoria":"Imobilizado","produto":"Hidroxido de Calcio PA","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":5.0,"fabricante":""},{"id":106,"codigo":"7892525054056","categoria":"Imobilizado","produto":"Isolante Para Resina","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":15.75,"fabricante":""},{"id":107,"codigo":"7898901604976","categoria":"Imobilizado","produto":"Jacare","un":"UN","estoqueMinimo":6,"estoqueIdeal":12,"estoqueAtual":6,"custoMedio":0.0,"fabricante":""},{"id":108,"codigo":"7898510779713","categoria":"Imobilizado","produto":"Kit Academico","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":1329.0,"fabricante":"dentflex"},{"id":109,"codigo":"7898567862543","categoria":"Imobilizado","produto":"Kit Cirurgico n.2","un":"UN","estoqueMinimo":1,"estoqueIdeal":16,"estoqueAtual":8,"custoMedio":9.9,"fabricante":""},{"id":110,"codigo":"7891040280452","categoria":"Imobilizado","produto":"Kit Estetico Simplificada","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":7,"custoMedio":699.0,"fabricante":"filtek"},{"id":111,"codigo":"7908155803985","categoria":"Imobilizado","produto":"Kit Polidores","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":37.99,"fabricante":""},{"id":112,"codigo":"7908155804036","categoria":"Imobilizado","produto":"Kit Ultra Gloss","un":"UN","estoqueMinimo":1,"estoqueIdeal":15,"estoqueAtual":15,"custoMedio":152.3,"fabricante":""},{"id":113,"codigo":"7908155803664","categoria":"Imobilizado","produto":"Kit Universal de Polimento e Desgate","un":"UN","estoqueMinimo":1,"estoqueIdeal":19,"estoqueAtual":19,"custoMedio":476.88,"fabricante":""},{"id":114,"codigo":"117898157728393","categoria":"Imobilizado","produto":"Lamina Bisturi","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":1,"custoMedio":29.9,"fabricante":"solidor"},{"id":115,"codigo":"117898157722926","categoria":"Imobilizado","produto":"Lamina de Bisturi","un":"UN","estoqueMinimo":10,"estoqueIdeal":100,"estoqueAtual":100,"custoMedio":29.9,"fabricante":"solidor"},{"id":116,"codigo":"7898930251028","categoria":"Imobilizado","produto":"Lamparina","un":"UN","estoqueMinimo":4,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":27.8,"fabricante":""},{"id":117,"codigo":"65898871451","categoria":"Imobilizado","produto":"Lencol de Borracha","un":"UN","estoqueMinimo":3,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":13.99,"fabricante":"alprime"},{"id":118,"codigo":"9991000180025","categoria":"Imobilizado","produto":"Limas 25x8","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":14.99,"fabricante":""},{"id":119,"codigo":"7891800180015","categoria":"Imobilizado","produto":"Limas Endo","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":14.99,"fabricante":""},{"id":120,"codigo":"7898283816325","categoria":"Imobilizado","produto":"Luva Cirurgica 7,0","un":"UN","estoqueMinimo":1,"estoqueIdeal":5,"estoqueAtual":5,"custoMedio":1.59,"fabricante":""},{"id":121,"codigo":"7898283816332","categoria":"Imobilizado","produto":"Luva Cirurgica 7,5","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":10,"custoMedio":1.29,"fabricante":""},{"id":122,"codigo":"7898945443142","categoria":"Imobilizado","produto":"Luva Cirurgica 8,0","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":10,"custoMedio":1.59,"fabricante":""},{"id":123,"codigo":"7898229803457","categoria":"Imobilizado","produto":"Mandril Mini","un":"UN","estoqueMinimo":1,"estoqueIdeal":9,"estoqueAtual":9,"custoMedio":0.0,"fabricante":""},{"id":124,"codigo":"7898561542663","categoria":"Imobilizado","produto":"Marcador Inst. Azul","un":"UN","estoqueMinimo":1,"estoqueIdeal":60,"estoqueAtual":60,"custoMedio":9.9,"fabricante":""},{"id":125,"codigo":"7898561542700","categoria":"Imobilizado","produto":"Marcador Inst. Rosa","un":"UN","estoqueMinimo":1,"estoqueIdeal":60,"estoqueAtual":60,"custoMedio":9.9,"fabricante":""},{"id":126,"codigo":"7898561542670","categoria":"Imobilizado","produto":"Marcador Inst. Verde","un":"UN","estoqueMinimo":1,"estoqueIdeal":60,"estoqueAtual":60,"custoMedio":9.9,"fabricante":""},{"id":127,"codigo":"7898283815182","categoria":"Imobilizado","produto":"Mascara des","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":8.9,"fabricante":"descarpak"},{"id":128,"codigo":"7908155803060","categoria":"Imobilizado","produto":"Maxicut","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":59.8,"fabricante":""},{"id":129,"codigo":"7893628057647","categoria":"Imobilizado","produto":"Medidor Alginato","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":6.3,"fabricante":""},{"id":130,"codigo":"65898870071","categoria":"Imobilizado","produto":"Microbrush Extrafino","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":9.9,"fabricante":"allprime"},{"id":131,"codigo":"65898870051","categoria":"Imobilizado","produto":"Microbrush Fino","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":9.9,"fabricante":"allprime"},{"id":132,"codigo":"65898870061","categoria":"Imobilizado","produto":"Microbrush Regular","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":9.99,"fabricante":"allprime"},{"id":133,"codigo":"7894713000623","categoria":"Imobilizado","produto":"Mini Rodas de Feltro","un":"UN","estoqueMinimo":1,"estoqueIdeal":12,"estoqueAtual":12,"custoMedio":9.71,"fabricante":""},{"id":134,"codigo":"7895742086664","categoria":"Imobilizado","produto":"Moldeira 4","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":10.0,"fabricante":""},{"id":135,"codigo":"7895742086671","categoria":"Imobilizado","produto":"Moldeira 5","un":"UN","estoqueMinimo":4,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":10.0,"fabricante":""},{"id":136,"codigo":"7895742086688","categoria":"Imobilizado","produto":"Moldeira 6","un":"UN","estoqueMinimo":6,"estoqueIdeal":10,"estoqueAtual":6,"custoMedio":10.0,"fabricante":""},{"id":137,"codigo":"7895742086695","categoria":"Imobilizado","produto":"Moldeira 7","un":"UN","estoqueMinimo":6,"estoqueIdeal":10,"estoqueAtual":6,"custoMedio":10.0,"fabricante":""},{"id":138,"codigo":"7895742086701","categoria":"Imobilizado","produto":"Moldeira 8","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":10.0,"fabricante":""},{"id":139,"codigo":"7898558545516","categoria":"Imobilizado","produto":"Moldeira Implante","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":1,"custoMedio":12.96,"fabricante":""},{"id":140,"codigo":"7898558545615","categoria":"Imobilizado","produto":"Moldeira Implante s02","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":1,"custoMedio":12.96,"fabricante":""},{"id":141,"codigo":"7898558545646","categoria":"Imobilizado","produto":"Moldeira Implante s03","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":1,"custoMedio":12.96,"fabricante":""},{"id":142,"codigo":"7898917563540","categoria":"Imobilizado","produto":"Moldeira Lateral Esquerda","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":1,"custoMedio":6.73,"fabricante":""},{"id":143,"codigo":"7898917563403","categoria":"Imobilizado","produto":"Moldeira Rasa","un":"UN","estoqueMinimo":8,"estoqueIdeal":8,"estoqueAtual":8,"custoMedio":0.0,"fabricante":""},{"id":144,"codigo":"7898620010973","categoria":"Imobilizado","produto":"Oculos de Protecao","un":"UN","estoqueMinimo":12,"estoqueIdeal":12,"estoqueAtual":12,"custoMedio":4.9,"fabricante":"ssplus"},{"id":145,"codigo":"7898032324996","categoria":"Imobilizado","produto":"Oppalis Flow","un":"UN","estoqueMinimo":3,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":25.99,"fabricante":""},{"id":146,"codigo":"71701106971","categoria":"Imobilizado","produto":"Pack Paper","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":0.0,"fabricante":""},{"id":147,"codigo":"7898591590474","categoria":"Imobilizado","produto":"Papel de Articulacao","un":"UN","estoqueMinimo":1,"estoqueIdeal":9,"estoqueAtual":9,"custoMedio":3.49,"fabricante":""},{"id":148,"codigo":"7897808332548","categoria":"Imobilizado","produto":"Papel Secador de Endo","un":"UN","estoqueMinimo":1,"estoqueIdeal":120,"estoqueAtual":120,"custoMedio":43.25,"fabricante":""},{"id":149,"codigo":"7898938244411","categoria":"Imobilizado","produto":"Pasta Profilatica","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":9.9,"fabricante":"shine"},{"id":150,"codigo":"7894713000043","categoria":"Imobilizado","produto":"Pasta Universal Kota","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":59.17,"fabricante":""},{"id":151,"codigo":"7898288140012","categoria":"Imobilizado","produto":"Pasta Zinco Enolica","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":45.72,"fabricante":"lysanda"},{"id":152,"codigo":"7899065800549","categoria":"Imobilizado","produto":"Perfurador Ainsworth","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":99.1,"fabricante":"golgran"},{"id":153,"codigo":"7899065808583","categoria":"Imobilizado","produto":"Pinca Clinica","un":"UN","estoqueMinimo":20,"estoqueIdeal":40,"estoqueAtual":20,"custoMedio":14.41,"fabricante":"golgran"},{"id":154,"codigo":"7899065808774","categoria":"Imobilizado","produto":"Pinca Hemos Curva","un":"UN","estoqueMinimo":9,"estoqueIdeal":18,"estoqueAtual":9,"custoMedio":36.06,"fabricante":""},{"id":155,"codigo":"7891800825091","categoria":"Imobilizado","produto":"Pinca Para Carbono","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":0.0,"fabricante":""},{"id":156,"codigo":"7891395005427","categoria":"Imobilizado","produto":"Pincel 141-2","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":0.0,"fabricante":"tigre"},{"id":157,"codigo":"7899597410186","categoria":"Imobilizado","produto":"Pincel 4b","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":0.0,"fabricante":""},{"id":158,"codigo":"7898078655412","categoria":"Imobilizado","produto":"Pino de Fibra Exacto","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":39.8,"fabricante":"angelus"},{"id":159,"codigo":"7898142583955","categoria":"Imobilizado","produto":"Placa de Montagem Trilho","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":51.0,"fabricante":""},{"id":160,"codigo":"7898496210712","categoria":"Imobilizado","produto":"Placa de Vidro","un":"UN","estoqueMinimo":6,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":11.86,"fabricante":"golgran"},{"id":161,"codigo":"7891800755435","categoria":"Imobilizado","produto":"Polidores ca","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":30.77,"fabricante":""},{"id":162,"codigo":"7908155803978","categoria":"Imobilizado","produto":"Polidores de Resina","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":30.77,"fabricante":""},{"id":163,"codigo":"7897808330636","categoria":"Imobilizado","produto":"Ponta de Polimento Chama","un":"UN","estoqueMinimo":1,"estoqueIdeal":6,"estoqueAtual":6,"custoMedio":79.3,"fabricante":""},{"id":164,"codigo":"7898234770416","categoria":"Imobilizado","produto":"Ponta Diamantada 1012","un":"UN","estoqueMinimo":1,"estoqueIdeal":20,"estoqueAtual":20,"custoMedio":2.79,"fabricante":""},{"id":165,"codigo":"7898234778092","categoria":"Imobilizado","produto":"Ponta Diamantada 1014","un":"UN","estoqueMinimo":1,"estoqueIdeal":20,"estoqueAtual":20,"custoMedio":2.79,"fabricante":""},{"id":166,"codigo":"7898234772885","categoria":"Imobilizado","produto":"Ponta Diamantada 3118","un":"UN","estoqueMinimo":1,"estoqueIdeal":20,"estoqueAtual":20,"custoMedio":2.79,"fabricante":""},{"id":167,"codigo":"7898229823417","categoria":"Imobilizado","produto":"Ponta Diamantada 3131","un":"UN","estoqueMinimo":1,"estoqueIdeal":5,"estoqueAtual":5,"custoMedio":0.0,"fabricante":""},{"id":168,"codigo":"7898234772991","categoria":"Imobilizado","produto":"Ponta Diamantada 3195","un":"UN","estoqueMinimo":1,"estoqueIdeal":20,"estoqueAtual":20,"custoMedio":2.79,"fabricante":""},{"id":169,"codigo":"7898234773103","categoria":"Imobilizado","produto":"Ponta Diamantada 3216","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":10,"custoMedio":2.79,"fabricante":""},{"id":170,"codigo":"7898229823875","categoria":"Imobilizado","produto":"Ponta Diamantada 4138","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":10,"custoMedio":0.0,"fabricante":""},{"id":171,"codigo":"7898234773233","categoria":"Imobilizado","produto":"Porta Algodao","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":0.0,"fabricante":"fava"},{"id":172,"codigo":"7898234773233","categoria":"Imobilizado","produto":"Porta Algodão Fava","un":"UN","estoqueMinimo":3,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":20.0,"fabricante":"Fava"},{"id":173,"codigo":"7899065808965","categoria":"Imobilizado","produto":"Porta Grampo","un":"UN","estoqueMinimo":3,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":82.22,"fabricante":"golgran"},{"id":174,"codigo":"7899065809771","categoria":"Imobilizado","produto":"Porta Matriz","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":33.11,"fabricante":""},{"id":175,"codigo":"7898938244473","categoria":"Imobilizado","produto":"Posicionador rx","un":"UN","estoqueMinimo":1,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":79.9,"fabricante":""},{"id":176,"codigo":"9995006103767","categoria":"Imobilizado","produto":"Primer Para Adesao","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":0.0,"fabricante":""},{"id":177,"codigo":"7898944081253","categoria":"Imobilizado","produto":"Prope","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":11.6,"fabricante":""},{"id":178,"codigo":"7897990315947","categoria":"Imobilizado","produto":"Reembasador Rigido","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":101.68,"fabricante":"tdv"},{"id":179,"codigo":"7898142587816","categoria":"Imobilizado","produto":"Regua de fox","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":55.0,"fabricante":"bioart"},{"id":180,"codigo":"7898078658505","categoria":"Imobilizado","produto":"Regua Edondotica","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":12.32,"fabricante":""},{"id":181,"codigo":"7898061105856","categoria":"Imobilizado","produto":"Regua Plastica 15cm","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":1.8,"fabricante":""},{"id":182,"codigo":"7898001894246","categoria":"Imobilizado","produto":"Resina Acrilica cor 61","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":31.34,"fabricante":"dencor"},{"id":183,"codigo":"7898001894284","categoria":"Imobilizado","produto":"Resina Acrilica cor 66","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":31.34,"fabricante":"dencor"},{"id":184,"codigo":"7898001894314","categoria":"Imobilizado","produto":"Resina Acrilica cor 69","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":31.34,"fabricante":"dencor"},{"id":185,"codigo":"3685600121","categoria":"Imobilizado","produto":"Resina Aura","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":3,"custoMedio":97.97,"fabricante":"sdi"},{"id":186,"codigo":"7896261372825","categoria":"Imobilizado","produto":"Retraflex 0","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":23.0,"fabricante":""},{"id":187,"codigo":"7896261372818","categoria":"Imobilizado","produto":"Retraflex 00","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":22.99,"fabricante":""},{"id":188,"codigo":"7896261372801","categoria":"Imobilizado","produto":"Retraflex 000","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":23.0,"fabricante":""},{"id":189,"codigo":"7896261372832","categoria":"Imobilizado","produto":"Retraflex 1","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":23.0,"fabricante":""},{"id":190,"codigo":"7891800219814","categoria":"Imobilizado","produto":"Rolinho de Algodao n 2","un":"UN","estoqueMinimo":1,"estoqueIdeal":20,"estoqueAtual":20,"custoMedio":2.89,"fabricante":"cremer"},{"id":191,"codigo":"7891800208283","categoria":"Imobilizado","produto":"Rolo de Algodao 1","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":5,"custoMedio":2.5,"fabricante":"cremer"},{"id":192,"codigo":"7898916637099","categoria":"Imobilizado","produto":"Rolo de Algodao Ssplus","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":5,"custoMedio":1.69,"fabricante":"ssplus"},{"id":193,"codigo":"7899065809924","categoria":"Imobilizado","produto":"Saca Protese","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":0.0,"fabricante":""},{"id":194,"codigo":"7898139600078","categoria":"Imobilizado","produto":"Saco Plastico 4cm-23cm","un":"UN","estoqueMinimo":1,"estoqueIdeal":100,"estoqueAtual":100,"custoMedio":1.34,"fabricante":""},{"id":195,"codigo":"7898139600344","categoria":"Imobilizado","produto":"Saco Plastico 5cm-23cm","un":"UN","estoqueMinimo":1,"estoqueIdeal":100,"estoqueAtual":100,"custoMedio":1.65,"fabricante":""},{"id":196,"codigo":"7891463000408","categoria":"Imobilizado","produto":"Seringa 20ml","un":"UN","estoqueMinimo":1,"estoqueIdeal":10,"estoqueAtual":10,"custoMedio":0.8,"fabricante":"bd"},{"id":197,"codigo":"7898938244619","categoria":"Imobilizado","produto":"Seringa Elastomero","un":"UN","estoqueMinimo":2,"estoqueIdeal":3,"estoqueAtual":2,"custoMedio":27.9,"fabricante":""},{"id":198,"codigo":"7897648800191","categoria":"Imobilizado","produto":"Silano","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":3,"custoMedio":17.76,"fabricante":"vilevie"},{"id":199,"codigo":"658988689400","categoria":"Imobilizado","produto":"Silicone p Laboratorio","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":60.2,"fabricante":""},{"id":200,"codigo":"7899065811590","categoria":"Imobilizado","produto":"Sonda Exploradora","un":"UN","estoqueMinimo":20,"estoqueIdeal":40,"estoqueAtual":20,"custoMedio":9.9,"fabricante":"golgran"},{"id":201,"codigo":"65898867011","categoria":"Imobilizado","produto":"Sugador","un":"UN","estoqueMinimo":1,"estoqueIdeal":20,"estoqueAtual":20,"custoMedio":3.69,"fabricante":"allprime"},{"id":202,"codigo":"7898475425618","categoria":"Imobilizado","produto":"Sugador Metalico","un":"UN","estoqueMinimo":1,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":23.5,"fabricante":""},{"id":203,"codigo":"7891060804003","categoria":"Imobilizado","produto":"Tesoura Papel","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":24.25,"fabricante":""},{"id":204,"codigo":"7896002067867","categoria":"Imobilizado","produto":"Tira de aco Serrilhada","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":36.0,"fabricante":"oraltech"},{"id":205,"codigo":"7898229810608","categoria":"Imobilizado","produto":"Tira de Lixa Resina","un":"UN","estoqueMinimo":1,"estoqueIdeal":3,"estoqueAtual":1,"custoMedio":6.51,"fabricante":"microdont"},{"id":206,"codigo":"7898229810561","categoria":"Imobilizado","produto":"Tiras de Lixa","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":14.2,"fabricante":""},{"id":207,"codigo":"7898283814888","categoria":"Imobilizado","produto":"Touca Desc","un":"UN","estoqueMinimo":1,"estoqueIdeal":5,"estoqueAtual":5,"custoMedio":6.49,"fabricante":""},{"id":208,"codigo":"7898561546166","categoria":"Imobilizado","produto":"Unimatrix","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":219.0,"fabricante":"maquira"},{"id":209,"codigo":"7897780205625","categoria":"Imobilizado","produto":"Vaselina Solida","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":3,"custoMedio":7.1,"fabricante":""},{"id":210,"codigo":"7898457642019","categoria":"Imobilizado","produto":"Vibrador de Gesso","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":250.0,"fabricante":"vh"},{"id":211,"codigo":"","categoria":"Componentes Protéticos","produto":"Analogo de Mini Pilar","un":"UN","estoqueMinimo":30,"estoqueIdeal":40,"estoqueAtual":36,"custoMedio":19.525,"fabricante":""},{"id":212,"codigo":"","categoria":"Componentes Protéticos","produto":"Analogo de Munhão Universal 3.3","un":"UN","estoqueMinimo":8,"estoqueIdeal":12,"estoqueAtual":6,"custoMedio":12.0,"fabricante":""},{"id":213,"codigo":"","categoria":"Componentes Protéticos","produto":"Analogo de Munho Universal 4.0","un":"UN","estoqueMinimo":8,"estoqueIdeal":20,"estoqueAtual":8,"custoMedio":17.5,"fabricante":""},{"id":214,"codigo":"","categoria":"Componentes Protéticos","produto":"Analogo de Ucla CM","un":"UN","estoqueMinimo":6,"estoqueIdeal":10,"estoqueAtual":4,"custoMedio":17.5,"fabricante":""},{"id":215,"codigo":"","categoria":"Componentes Protéticos","produto":"Cicatrizador CM 4x1.5","un":"UN","estoqueMinimo":10,"estoqueIdeal":10,"estoqueAtual":5,"custoMedio":22.0,"fabricante":""},{"id":216,"codigo":"","categoria":"Componentes Protéticos","produto":"Cicatrizador CM 4x2.5","un":"UN","estoqueMinimo":10,"estoqueIdeal":20,"estoqueAtual":10,"custoMedio":17.0,"fabricante":""},{"id":217,"codigo":"","categoria":"Componentes Protéticos","produto":"Cicatrizador CM 4x3.5","un":"UN","estoqueMinimo":10,"estoqueIdeal":10,"estoqueAtual":9,"custoMedio":22.0,"fabricante":""},{"id":218,"codigo":"","categoria":"Componentes Protéticos","produto":"Cicatrizador CM 4x4.5","un":"UN","estoqueMinimo":4,"estoqueIdeal":8,"estoqueAtual":10,"custoMedio":27.0,"fabricante":"INTRAOSS"},{"id":219,"codigo":"","categoria":"Componentes Protéticos","produto":"Cilíndro Mini Pilar Calcinável C/ Parafuso","un":"UN","estoqueMinimo":0,"estoqueIdeal":0,"estoqueAtual":0,"custoMedio":16.0,"fabricante":"SINGULAR"},{"id":220,"codigo":"","categoria":"Componentes Protéticos","produto":"Cilíndro Mini Pilar Titânio c/ Parafuso","un":"UN","estoqueMinimo":8,"estoqueIdeal":16,"estoqueAtual":12,"custoMedio":23.0,"fabricante":"SINGULAR"},{"id":221,"codigo":"","categoria":"Componentes Protéticos","produto":"Coping Calcinável de Munhão Universal 3.3","un":"UN","estoqueMinimo":8,"estoqueIdeal":20,"estoqueAtual":15,"custoMedio":9.0,"fabricante":""},{"id":222,"codigo":"","categoria":"Componentes Protéticos","produto":"Coping Calcinável de Munhão Universal 4.5","un":"UN","estoqueMinimo":10,"estoqueIdeal":20,"estoqueAtual":13,"custoMedio":12.25,"fabricante":""},{"id":223,"codigo":"","categoria":"Componentes Protéticos","produto":"Cover de Implante","un":"UN","estoqueMinimo":12,"estoqueIdeal":20,"estoqueAtual":12,"custoMedio":20.0,"fabricante":""},{"id":224,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar Angulado 1.5 17º CM","un":"UN","estoqueMinimo":0,"estoqueIdeal":0,"estoqueAtual":0,"custoMedio":165.9,"fabricante":"SINGULAR"},{"id":225,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar Angulado 1.5 30º CM","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":0,"custoMedio":165.9,"fabricante":"SINGULAR"},{"id":226,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar Angulado 2.5 17º CM","un":"UN","estoqueMinimo":0,"estoqueIdeal":0,"estoqueAtual":0,"custoMedio":165.9,"fabricante":"SINGULAR"},{"id":227,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar Angulado 2.5 30º CM","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":4,"custoMedio":158.45,"fabricante":"SINGULAR"},{"id":228,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar Angulado 3.5 17º CM","un":"UN","estoqueMinimo":0,"estoqueIdeal":0,"estoqueAtual":0,"custoMedio":165.9,"fabricante":"SINGULAR"},{"id":229,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar Angulado 3.5 30º CM","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":157.45,"fabricante":"SINGULAR"},{"id":230,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar CM 0.8","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":17.0,"fabricante":"SINGULAR"},{"id":231,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar CM 1.5","un":"UN","estoqueMinimo":4,"estoqueIdeal":4,"estoqueAtual":8,"custoMedio":57.55,"fabricante":"SINGULAR"},{"id":232,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar CM 2.5","un":"UN","estoqueMinimo":8,"estoqueIdeal":12,"estoqueAtual":22,"custoMedio":64.275,"fabricante":"SINGULAR"},{"id":233,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar CM 3.5","un":"UN","estoqueMinimo":8,"estoqueIdeal":12,"estoqueAtual":21,"custoMedio":59.3,"fabricante":"SINGULAR"},{"id":234,"codigo":"","categoria":"Componentes Protéticos","produto":"Mini Pilar CM 4.5","un":"UN","estoqueMinimo":4,"estoqueIdeal":8,"estoqueAtual":8,"custoMedio":71.0,"fabricante":""},{"id":235,"codigo":"","categoria":"Componentes Protéticos","produto":"Munhão Universal CM 3.3x4x1.5","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":3,"custoMedio":31.2,"fabricante":""},{"id":236,"codigo":"","categoria":"Componentes Protéticos","produto":"Munhão Universal CM 3.3x4x2.5","un":"UN","estoqueMinimo":4,"estoqueIdeal":6,"estoqueAtual":3,"custoMedio":42.6,"fabricante":""},{"id":237,"codigo":"","categoria":"Componentes Protéticos","produto":"Munhão Universal CM 3.3x4x3.5","un":"UN","estoqueMinimo":4,"estoqueIdeal":4,"estoqueAtual":4,"custoMedio":59.5,"fabricante":""},{"id":238,"codigo":"","categoria":"Componentes Protéticos","produto":"Munhão Universal CM 4.5x4x1.5","un":"UN","estoqueMinimo":4,"estoqueIdeal":4,"estoqueAtual":0,"custoMedio":31.2,"fabricante":""},{"id":239,"codigo":"","categoria":"Componentes Protéticos","produto":"Munhão Universal CM 4.5x4x2.5","un":"UN","estoqueMinimo":4,"estoqueIdeal":8,"estoqueAtual":8,"custoMedio":51.15,"fabricante":""},{"id":240,"codigo":"","categoria":"Componentes Protéticos","produto":"Munhão Universal CM 4.5x4x3.5","un":"UN","estoqueMinimo":4,"estoqueIdeal":4,"estoqueAtual":0,"custoMedio":31.2,"fabricante":""},{"id":241,"codigo":"","categoria":"Componentes Protéticos","produto":"Tampa de Proteção DO Mini Pilar","un":"UN","estoqueMinimo":12,"estoqueIdeal":20,"estoqueAtual":20,"custoMedio":17.25,"fabricante":"INTRAOSS"},{"id":242,"codigo":"","categoria":"Componentes Protéticos","produto":"Transferente de Mini Pilar","un":"UN","estoqueMinimo":8,"estoqueIdeal":20,"estoqueAtual":10,"custoMedio":20.0,"fabricante":""},{"id":243,"codigo":"","categoria":"Componentes Protéticos","produto":"Transferente de Munhão Universal CM 3.3","un":"UN","estoqueMinimo":8,"estoqueIdeal":8,"estoqueAtual":8,"custoMedio":10.0,"fabricante":""},{"id":244,"codigo":"","categoria":"Componentes Protéticos","produto":"Transferente de Munhão Universal CM 4.5","un":"UN","estoqueMinimo":10,"estoqueIdeal":20,"estoqueAtual":10,"custoMedio":11.5,"fabricante":""},{"id":245,"codigo":"","categoria":"Componentes Protéticos","produto":"Ucla Cr-co CM 1.5","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":2,"custoMedio":80.75,"fabricante":""},{"id":246,"codigo":"","categoria":"Componentes Protéticos","produto":"Ucla Cr-co CM 2.5","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":2,"custoMedio":80.75,"fabricante":""},{"id":247,"codigo":"","categoria":"Componentes Protéticos","produto":"Ucla Cr-co CM 3.5","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":80.75,"fabricante":""},{"id":248,"codigo":"","categoria":"Componentes Protéticos","produto":"Ucla Titânio CM 0.8","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":6,"custoMedio":23.0,"fabricante":"SINGULAR"},{"id":249,"codigo":"","categoria":"Componentes Protéticos","produto":"Ucla Titânio CM 1.5","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":2,"custoMedio":23.0,"fabricante":"SINGULAR"},{"id":250,"codigo":"","categoria":"Componentes Protéticos","produto":"Ucla Titânio CM 2.5","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":23.0,"fabricante":"SINGULAR"},{"id":251,"codigo":"","categoria":"Componentes Protéticos","produto":"Ucla Titânio CM 3.5","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":1,"custoMedio":28.0,"fabricante":"SINGULAR"},{"id":252,"codigo":"","categoria":"Componentes Protéticos","produto":"Ucla Titânio CM 4.5","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":0,"custoMedio":23.0,"fabricante":"SINGULAR"},{"id":253,"codigo":"","categoria":"Material Cirúrgico","produto":"Enxerto Ósseo Bovino Lumina-bone Grosso","un":"UN","estoqueMinimo":2,"estoqueIdeal":4,"estoqueAtual":0,"custoMedio":169.0,"fabricante":"CRITERIA"},{"id":254,"codigo":"","categoria":"Material Cirúrgico","produto":"Enxerto Ósseo Bovino Lumina-bone Médio","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":0,"custoMedio":169.0,"fabricante":"CRITERIA"},{"id":255,"codigo":"","categoria":"Material Cirúrgico","produto":"Enxerto Ósseo Sintético Nanosynt 500-1000µm","un":"UN","estoqueMinimo":1,"estoqueIdeal":2,"estoqueAtual":0,"custoMedio":189.0,"fabricante":"FGM"},{"id":256,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Cônico 3.5x10mm","un":"UN","estoqueMinimo":8,"estoqueIdeal":12,"estoqueAtual":0,"custoMedio":75.95,"fabricante":"INTRAOSS"},{"id":257,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Cônico 3.5x11.5mm","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":0,"custoMedio":75.95,"fabricante":"INTRAOSS"},{"id":258,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Cônico 3.5x13mm","un":"UN","estoqueMinimo":4,"estoqueIdeal":6,"estoqueAtual":0,"custoMedio":75.615,"fabricante":"INTRAOSS"},{"id":259,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Cônico 3.5x15mm","un":"UN","estoqueMinimo":0,"estoqueIdeal":0,"estoqueAtual":0,"custoMedio":69.9,"fabricante":"SINGULAR"},{"id":260,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Cônico 3.5x8mm","un":"UN","estoqueMinimo":4,"estoqueIdeal":4,"estoqueAtual":1,"custoMedio":75.95,"fabricante":"INTRAOSS"},{"id":261,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Extract 3.75x11mm","un":"UN","estoqueMinimo":4,"estoqueIdeal":8,"estoqueAtual":0,"custoMedio":74.975,"fabricante":"INTRAOSS"},{"id":262,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Extract 3.75x13mm","un":"UN","estoqueMinimo":4,"estoqueIdeal":8,"estoqueAtual":2,"custoMedio":71.95,"fabricante":"INTRAOSS"},{"id":263,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Extract 3.75x15mm","un":"UN","estoqueMinimo":2,"estoqueIdeal":2,"estoqueAtual":0,"custoMedio":69.9,"fabricante":"INTRAOSS"},{"id":264,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Extract 3.75x7mm","un":"UN","estoqueMinimo":1,"estoqueIdeal":1,"estoqueAtual":0,"custoMedio":69.9,"fabricante":"INTRAOSS"},{"id":265,"codigo":"","categoria":"Material Cirúrgico","produto":"Implante cm Extract 3.75x9mm","un":"UN","estoqueMinimo":4,"estoqueIdeal":4,"estoqueAtual":3,"custoMedio":71.95,"fabricante":"INTRAOSS"}];
+
+// ── DATA ──────────────────────────────────────────────────────────
+function load() {
+  const d = localStorage.getItem(KEY);
+  if (d) {
+    try { const o = JSON.parse(d); produtos = o.produtos || []; nextId = o.nextId || 300; }
+    catch { initDefault(); }
+  } else { initDefault(); }
+  // migrate: ensure all fields
+  produtos = produtos.map(p => ({
+    deleted: false, deletedAt: null, compras: [], ...p
+  }));
+}
+function initDefault() { produtos = DEFAULT.map(p => ({...p, deleted:false, deletedAt:null, compras:[]})); nextId=300; save(); }
+function save() { localStorage.setItem(KEY, JSON.stringify({produtos, nextId})); }
+
+// ── STATUS ────────────────────────────────────────────────────────
+function getStatus(p) {
+  if (p.estoqueMinimo === 0) return 'over';
+  if (p.estoqueAtual < p.estoqueMinimo) return 'danger';
+  if (p.estoqueAtual === p.estoqueMinimo) return 'warning';
+  if (p.estoqueAtual >= p.estoqueIdeal) return 'over';
+  return 'ok';
+}
+const STATUS_LABEL = {danger:'⚠ Abaixo', warning:'→ Mínimo', ok:'✓ OK', over:'↑ Acima'};
+
+// ── TABS ──────────────────────────────────────────────────────────
+function showTab(n) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${n}')"]`).classList.add('active');
+  document.getElementById('panel-'+n).classList.add('active');
+  const renders = {estoque:renderEstoque, compras:renderCompras, historico:renderHistorico, lixeira:renderLixeira};
+  if (renders[n]) renders[n]();
+}
+
+// ── STATS ─────────────────────────────────────────────────────────
+function updateStats() {
+  const ativos = produtos.filter(p=>!p.deleted);
+  document.getElementById('s-total').textContent = ativos.length;
+  document.getElementById('s-falta').textContent = ativos.filter(p=>getStatus(p)==='danger').length;
+  document.getElementById('s-ok').textContent = ativos.filter(p=>['ok','over'].includes(getStatus(p))).length;
+  document.getElementById('s-lixeira').textContent = produtos.filter(p=>p.deleted).length;
+}
+
+// ── ESTOQUE ───────────────────────────────────────────────────────
+function renderEstoque() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const cat = document.getElementById('filtro-cat').value;
+  const st = document.getElementById('filtro-status').value;
+  let list = produtos.filter(p => !p.deleted &&
+    (!q || p.produto.toLowerCase().includes(q) || (p.fabricante||'').toLowerCase().includes(q)) &&
+    (!cat || p.categoria === cat) &&
+    (!st || getStatus(p) === st)
+  );
+  const tbody = document.getElementById('tbody-estoque');
+  tbody.innerHTML = list.map(p => {
+    const s = getStatus(p);
+    const custo = p.custoMedio > 0 ? 'R$ '+p.custoMedio.toFixed(2) : '—';
+    return `<tr>
+      <td><div class="prod-name">${p.produto}</div>${p.fabricante?`<div class="prod-fab">${p.fabricante}</div>`:''}</td>
+      <td><span class="cat-chip" style="font-size:10px">${p.categoria.replace('Componentes Protéticos','Comp. Prot.').replace('Material Cirúrgico','Cirúrgico')}</span></td>
+      <td><span class="badge ${s}">${STATUS_LABEL[s]}</span></td>
+      <td><div class="qty-ctrl">
+        <button class="qty-btn" onclick="ajustar(${p.id},-1)">−</button>
+        <span class="qty-val">${p.estoqueAtual}</span>
+        <button class="qty-btn" onclick="ajustar(${p.id},1)">+</button>
+      </div></td>
+      <td><span class="editable-cell" title="Clique para editar" onclick="editarCampo(this,${p.id},'estoqueMinimo')">${p.estoqueMinimo}</span></td>
+      <td><span class="editable-cell" title="Clique para editar" onclick="editarCampo(this,${p.id},'estoqueIdeal')">${p.estoqueIdeal}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${custo}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-accent btn-xs" onclick="abrirHistProduto(${p.id})" title="Histórico">📋</button>
+        <button class="btn btn-ghost btn-xs" onclick="sugerirMarca(${p.id})" title="Sugerir marca IA">🤖</button>
+        <button class="btn btn-danger btn-xs" onclick="moverLixeira(${p.id})" title="Excluir">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+  if (!list.length) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--muted)">Nenhum produto</td></tr>';
+  updateStats();
+}
+
+function ajustar(id, d) {
+  const p = produtos.find(x=>x.id===id); if(!p) return;
+  p.estoqueAtual = Math.max(0, p.estoqueAtual + d);
+  save(); renderEstoque();
+}
+
+function editarCampo(el, id, campo) {
+  const p = produtos.find(x=>x.id===id); if(!p) return;
+  const val = p[campo];
+  const inp = document.createElement('input');
+  inp.type='number'; inp.value=val; inp.min=0;
+  inp.className='edit-input';
+  el.replaceWith(inp); inp.focus(); inp.select();
+  const commit = () => {
+    const n = parseInt(inp.value)||0;
+    p[campo] = n; save();
+    const span = document.createElement('span');
+    span.className='editable-cell'; span.title='Clique para editar';
+    span.textContent=n;
+    span.onclick=()=>editarCampo(span,id,campo);
+    inp.replaceWith(span);
+    updateStats();
+  };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{if(e.key==='Enter')commit();if(e.key==='Escape'){inp.value=val;commit();}});
+}
+
+function moverLixeira(id) {
+  const p = produtos.find(x=>x.id===id); if(!p) return;
+  p.deleted=true; p.deletedAt=new Date().toISOString();
+  save(); renderEstoque(); toast(`"${p.produto}" movido para lixeira`);
+}
+
+// ── COMPRAS ───────────────────────────────────────────────────────
+function renderCompras() {
+  const faltando = produtos.filter(p=>!p.deleted && getStatus(p)==='danger')
+    .sort((a,b)=>{
+      const ord = c => c==='Material Cirúrgico'?0:c==='Componentes Protéticos'?1:2;
+      return ord(a.categoria)-ord(b.categoria)||a.produto.localeCompare(b.produto);
+    });
+  const el = document.getElementById('compras-list');
+  if (!faltando.length) { el.innerHTML='<div class="empty"><div class="empty-icon">✅</div>Nenhum item abaixo do mínimo!</div>'; return; }
+  el.innerHTML = faltando.map(p=>{
+    const precisa = p.estoqueIdeal - p.estoqueAtual;
+    const critico = p.estoqueAtual===0;
+    const est = p.custoMedio>0?` · R$ ${(p.custoMedio*precisa).toFixed(2)} est.`:'';
+    return `<div class="compra-item ${critico?'critico':''}">
+      <div class="compra-info">
+        <h4>${p.produto} ${critico?'<span style="color:var(--danger);font-size:11px;font-weight:400">ZERADO</span>':''}</h4>
+        <div class="compra-meta">
+          <span>Atual: <b>${p.estoqueAtual}</b></span>
+          <span>Pedir: <b>${precisa} un</b></span>
+          ${p.fabricante?`<span>🏭 ${p.fabricante}</span>`:''}
+          <span class="cat-chip">${p.categoria}</span>
+          ${est?`<span style="color:var(--ok)">${est}</span>`:''}
+        </div>
+      </div>
+      <div class="compra-actions">
+        <button class="btn btn-ok btn-sm" onclick="abrirModalCompra(${p.id})">📥 Registrar entrada</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirModalCompra(id) {
+  produtoCompraAtual = id;
+  const p = produtos.find(x=>x.id===id);
+  document.getElementById('modal-compra-nome').textContent = p.produto;
+  document.getElementById('mc-qtd').value = Math.max(1, p.estoqueIdeal - p.estoqueAtual);
+  document.getElementById('mc-preco').value = p.custoMedio||0;
+  document.getElementById('mc-forn').value = '';
+  document.getElementById('mc-obs').value = '';
+  document.getElementById('mc-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('modal-compra').classList.add('open');
+}
+
+function registrarCompra() {
+  const p = produtos.find(x=>x.id===produtoCompraAtual); if(!p) return;
+  const qtd = parseInt(document.getElementById('mc-qtd').value)||0;
+  const preco = parseFloat(document.getElementById('mc-preco').value)||0;
+  const forn = document.getElementById('mc-forn').value.trim();
+  const data = document.getElementById('mc-data').value;
+  const obs = document.getElementById('mc-obs').value.trim();
+  if (!qtd) { toast('Informe a quantidade'); return; }
+  if (!p.compras) p.compras=[];
+  p.compras.push({id:Date.now(), data, qtd, preco, fornecedor:forn, obs});
+  p.estoqueAtual += qtd;
+  if (preco>0) p.custoMedio = preco;
+  save(); fecharModal('modal-compra'); renderCompras(); updateStats();
+  toast(`+${qtd} unidades de "${p.produto}" ✓`);
+}
+
+function copiarLista() {
+  const faltando = produtos.filter(p=>!p.deleted&&getStatus(p)==='danger');
+  const txt = '🛒 Lista de Compras Hansen Odontologia\n'+new Date().toLocaleDateString('pt-BR')+'\n\n'+
+    faltando.map(p=>`• ${p.produto} — pedir ${p.estoqueIdeal-p.estoqueAtual} un (atual: ${p.estoqueAtual})`).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>toast('Lista copiada ✓'));
+}
+
+// ── COTAÇÃO IA ────────────────────────────────────────────────────
+let cotacaoAtiva = false;
+
+async function iniciarCotacao() {
+  if (cotacaoAtiva) return;
+  const faltando = produtos.filter(p=>!p.deleted&&getStatus(p)==='danger');
+  if (!faltando.length) { toast('Nenhum item para cotar'); return; }
+  cotacaoAtiva = true;
+  document.getElementById('btn-cotar').disabled = true;
+  document.getElementById('btn-cotar').textContent = '⏳ Cotando...';
+  document.getElementById('progress-bar').style.display='block';
+  const list = document.getElementById('cotacao-list');
+  // Render placeholders
+  list.innerHTML = faltando.map(p=>`
+    <div class="cotacao-item" id="cot-${p.id}">
+      <h4>${p.produto} <span class="cat-chip">${p.categoria}</span></h4>
+      <div class="cotacao-result loading" id="cot-res-${p.id}">⏳ Aguardando...</div>
+    </div>`).join('');
+  for (let i=0; i<faltando.length; i++) {
+    const p = faltando[i];
+    const pct = Math.round((i/faltando.length)*100);
+    document.getElementById('progress-fill').style.width = pct+'%';
+    document.getElementById('cotacao-status').textContent = `Cotando ${i+1}/${faltando.length}: ${p.produto}`;
+    document.getElementById(`cot-res-${p.id}`).textContent = '🔍 Pesquisando...';
+    try {
+      const resultado = await cotarProduto(p.produto, p.fabricante);
+      renderCotacaoResult(p.id, resultado);
+    } catch(e) {
+      document.getElementById(`cot-res-${p.id}`).className='cotacao-result notfound';
+      document.getElementById(`cot-res-${p.id}`).textContent='⚠ Erro na busca';
+    }
+    await new Promise(r=>setTimeout(r,800));
+  }
+  document.getElementById('progress-fill').style.width='100%';
+  document.getElementById('cotacao-status').textContent = `✓ Cotação concluída — ${faltando.length} itens pesquisados`;
+  document.getElementById('btn-cotar').disabled=false;
+  document.getElementById('btn-cotar').textContent='🔍 Cotar lista de compras';
+  cotacaoAtiva=false;
+}
+
+async function cotarProduto(nome, fabricante) {
+  const query = fabricante ? `${nome} ${fabricante}` : nome;
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:600,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      system:'Você é um assistente de compras odontológicas. Pesquise o preço atual do produto em lojas brasileiras de material odontológico. Responda SOMENTE com JSON válido, sem markdown, sem explicações.',
+      messages:[{role:'user',content:`Pesquise o preço atual de "${query}" em lojas de material odontológico no Brasil (dentalcremer.com.br, dentalspeed.com.br, lojadental.com.br, dentaloffice.com.br). Retorne APENAS este JSON: {"preco":NUMBER_OU_NULL,"loja":"NOME_DA_LOJA","url":"URL","encontrado":true_ou_false,"obs":"observação curta opcional"}`}]
+    })
+  });
+  const data = await resp.json();
+  // handle multi-turn if needed
+  let messages = [{role:'user',content:`Pesquise o preço atual de "${query}" em lojas de material odontológico no Brasil (dentalcremer.com.br, dentalspeed.com.br, lojadental.com.br). Retorne APENAS este JSON: {"preco":NUMBER_OU_NULL,"loja":"NOME_DA_LOJA","url":"URL","encontrado":true_ou_false,"obs":"observação curta"}`}];
+  let finalText = '';
+  if (data.stop_reason === 'tool_use') {
+    messages.push({role:'assistant',content:data.content});
+    const toolResults = data.content.filter(b=>b.type==='tool_use').map(b=>({type:'tool_result',tool_use_id:b.id,content:'executed'}));
+    messages.push({role:'user',content:toolResults});
+    const resp2 = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages})
+    });
+    const data2 = await resp2.json();
+    finalText = (data2.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  } else {
+    finalText = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  }
+  const clean = finalText.replace(/```json|```/g,'').trim();
+  return JSON.parse(clean);
+}
+
+function renderCotacaoResult(id, r) {
+  const el = document.getElementById(`cot-res-${id}`);
+  if (!el) return;
+  if (r.encontrado && r.preco) {
+    el.className='cotacao-result found';
+    const link = r.url ? `<a href="${r.url}" target="_blank" style="color:var(--accent);font-size:12px;margin-left:8px">🔗 Ver produto</a>` : '';
+    el.innerHTML = `<span class="cotacao-preco">R$ ${Number(r.preco).toFixed(2)}</span> <span style="color:var(--muted);font-size:12px">— ${r.loja||'Loja dental'}</span>${link}${r.obs?`<br><span style="font-size:11px;color:var(--muted)">${r.obs}</span>`:''}`;
+  } else {
+    el.className='cotacao-result notfound';
+    el.textContent = r.obs || '⚠ Não encontrado online';
+  }
+}
+
+// ── MARCA IA ─────────────────────────────────────────────────────
+async function sugerirMarca(id) {
+  const p = produtos.find(x=>x.id===id); if(!p) return;
+  toast(`🤖 Buscando marca para "${p.produto}"...`);
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:300,
+        system:'Você é especialista em materiais odontológicos brasileiros. Responda SOMENTE em JSON.',
+        messages:[{role:'user',content:`Para o material odontológico "${p.produto}", quais são as melhores marcas/fabricantes disponíveis no Brasil? Retorne APENAS: {"marcas":["marca1","marca2","marca3"],"recomendacao":"marca mais indicada","motivo":"motivo curto"}`}]
+      })
+    });
+    const data = await resp.json();
+    const txt = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const r = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    alert(`🏭 Marcas para "${p.produto}":\n\n${r.marcas.join(', ')}\n\n✅ Recomendada: ${r.recomendacao}\n💡 ${r.motivo}`);
+  } catch(e) { toast('Erro ao buscar marca'); }
+}
+
+// ── HISTÓRICO ─────────────────────────────────────────────────────
+function renderHistorico() {
+  const todas = produtos.filter(p=>!p.deleted&&p.compras&&p.compras.length>0)
+    .flatMap(p=>p.compras.map(c=>({...c,produto:p.produto,prodId:p.id})))
+    .sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const el = document.getElementById('historico-list');
+  if (!todas.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>Nenhuma entrada registrada ainda.</div>'; return; }
+  el.innerHTML = todas.map(c=>`
+    <div class="hist-item">
+      <div class="hi-top">
+        <strong>${c.produto}</strong>
+        <span style="color:var(--ok);font-weight:600">+${c.qtd} un</span>
+      </div>
+      <div class="hi-meta">
+        📅 ${c.data} ${c.fornecedor?`· 🏪 ${c.fornecedor}`:''} ${c.preco>0?`· R$ ${c.preco.toFixed(2)}/un`:''}
+        ${c.obs?`<br>💬 ${c.obs}`:''}
+      </div>
+    </div>`).join('');
+}
+
+function abrirHistProduto(id) {
+  const p = produtos.find(x=>x.id===id); if(!p) return;
+  document.getElementById('modal-hist-title').textContent = `📋 ${p.produto}`;
+  const compras = (p.compras||[]).slice().reverse();
+  const el = document.getElementById('modal-hist-content');
+  if (!compras.length) { el.innerHTML='<div style="color:var(--muted);padding:16px 0">Nenhuma entrada registrada para este produto.</div>'; }
+  else { el.innerHTML=compras.map(c=>`
+    <div class="hist-item">
+      <div class="hi-top"><span>+${c.qtd} unidades</span><span style="color:var(--muted);font-size:12px">${c.data}</span></div>
+      <div class="hi-meta">${c.fornecedor?`🏪 ${c.fornecedor} `:''} ${c.preco>0?`· R$ ${c.preco.toFixed(2)}/un`:''} ${c.obs?`· ${c.obs}`:''}</div>
+    </div>`).join('');}
+  document.getElementById('modal-hist').classList.add('open');
+}
+
+// ── LIXEIRA ───────────────────────────────────────────────────────
+function renderLixeira() {
+  const del = produtos.filter(p=>p.deleted);
+  const el = document.getElementById('lixeira-list');
+  if (!del.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🗑</div>Lixeira vazia.</div>'; return; }
+  el.innerHTML = del.map(p=>`
+    <div class="lixeira-item">
+      <div>
+        <div style="font-weight:600">${p.produto}</div>
+        <div style="font-size:12px;color:var(--muted)">${p.categoria} · Excluído em ${new Date(p.deletedAt).toLocaleDateString('pt-BR')}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="restaurar(${p.id})">↩ Restaurar</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirPermanente(${p.id})">🗑 Excluir definitivo</button>
+      </div>
+    </div>`).join('');
+}
+
+function restaurar(id) {
+  const p = produtos.find(x=>x.id===id); if(!p) return;
+  p.deleted=false; p.deletedAt=null; save(); renderLixeira(); updateStats();
+  toast(`"${p.produto}" restaurado ✓`);
+}
+
+function excluirPermanente(id) {
+  if (!confirm('Excluir definitivamente? Não tem volta.')) return;
+  produtos = produtos.filter(x=>x.id!==id); save(); renderLixeira(); updateStats();
+}
+
+function esvaziarLixeira() {
+  const n = produtos.filter(p=>p.deleted).length;
+  if (!n) return;
+  if (!confirm(`Excluir ${n} itens permanentemente?`)) return;
+  produtos = produtos.filter(p=>!p.deleted); save(); renderLixeira(); updateStats();
+}
+
+// ── NOVO PRODUTO ─────────────────────────────────────────────────
+function addProduto() {
+  const nome = document.getElementById('new-nome').value.trim();
+  if (!nome) { toast('Informe o nome'); return; }
+  const p = {
+    id:nextId++, codigo:'', deleted:false, deletedAt:null, compras:[],
+    categoria:document.getElementById('new-cat').value,
+    produto:nome, un:'UN',
+    estoqueMinimo:parseInt(document.getElementById('new-min').value)||0,
+    estoqueIdeal:parseInt(document.getElementById('new-ideal').value)||0,
+    estoqueAtual:parseInt(document.getElementById('new-atual').value)||0,
+    custoMedio:parseFloat(document.getElementById('new-custo').value)||0,
+    fabricante:document.getElementById('new-fab').value.trim()
+  };
+  produtos.push(p); save(); updateStats();
+  document.getElementById('new-nome').value='';
+  document.getElementById('new-fab').value='';
+  document.getElementById('new-atual').value='0';
+  document.getElementById('new-custo').value='0';
+  toast(`"${p.produto}" cadastrado ✓`);
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────
+function gerarCSV(rows, headers) {
+  const bom='\uFEFF';
+  const csv=bom+[headers,...rows].map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  return a;
+}
+
+function exportarCSV() {
+  const ativos = produtos.filter(p=>!p.deleted);
+  const a = gerarCSV(
+    ativos.map(p=>[p.produto,p.categoria,p.fabricante,p.estoqueAtual,p.estoqueMinimo,p.estoqueIdeal,p.custoMedio,STATUS_LABEL[getStatus(p)]]),
+    ['Produto','Categoria','Fabricante','Estoque Atual','Mínimo','Ideal','Custo Médio','Status']
+  );
+  a.download='estoque-hansen.csv'; a.click();
+}
+
+function exportarCSVCompras() {
+  const faltando = produtos.filter(p=>!p.deleted&&getStatus(p)==='danger');
+  const a = gerarCSV(
+    faltando.map(p=>[p.produto,p.categoria,p.fabricante,p.estoqueAtual,p.estoqueIdeal-p.estoqueAtual,p.custoMedio,(p.custoMedio*(p.estoqueIdeal-p.estoqueAtual)).toFixed(2)]),
+    ['Produto','Categoria','Fabricante','Estoque Atual','Qtd a Pedir','Custo Unit.','Total Estimado']
+  );
+  a.download='compras-hansen.csv'; a.click();
+}
+
+function exportarCSVHistorico() {
+  const linhas = produtos.filter(p=>!p.deleted&&p.compras?.length)
+    .flatMap(p=>p.compras.map(c=>[p.produto,p.categoria,c.data,c.qtd,c.preco,c.fornecedor||'',c.obs||'']))
+    .sort((a,b)=>new Date(b[2])-new Date(a[2]));
+  const a = gerarCSV(linhas,['Produto','Categoria','Data','Qtd','Preço Unit.','Fornecedor','Obs']);
+  a.download='historico-hansen.csv'; a.click();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────
+function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg) {
+  const el=document.getElementById('toast'); el.textContent=msg;
+  el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+load(); renderEstoque(); updateStats();
+</script>
+</body>
+</html>
